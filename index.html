@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="it" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matteo Perini | Sviluppo Web Custom & Nativo</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            300: '#7dd3fc', 
+                            400: '#38bdf8', // Ciano acceso
+                            500: '#0ea5e9', // Blu Tech
+                            900: '#0c4a6e', 
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- CSS Custom per animazione Flip Card 3D e Effetti 3D -->
+    <style>
+        .perspective { perspective: 1000px; }
+        .transform-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        
+        .flip-inner {
+            display: grid;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .flip-front, .flip-back {
+            grid-area: 1 / 1;
+        }
+        
+        .flip-back {
+            transform: rotateY(180deg);
+        }
+        
+        .flipped .flip-inner {
+            transform: rotateY(180deg);
+        }
+
+        /* Effetto 3D personalizzato per la foto */
+        .photo-3d {
+            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.5s ease;
+        }
+        .photo-3d:hover {
+            transform: translateY(-8px) rotateX(4deg) rotateY(-4deg) scale(1.02);
+            box-shadow: 0 25px 50px -12px rgba(14, 165, 233, 0.25);
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-zinc-300 font-sans antialiased selection:bg-brand-500 selection:text-white flex flex-col min-h-screen">
+
+    <!-- HEADER -->
+    <header class="fixed w-full top-0 z-50 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800">
+        <div class="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
+            <!-- Nome con foto profilo piccola integrata -->
+            <a href="#" class="flex items-center gap-3 text-white font-mono font-bold text-xl tracking-tighter">
+                <img src="foto/foto3.jpg" alt="Avatar" class="w-9 h-9 object-cover border border-brand-500/50 shadow-sm" onerror="this.src='foto/foto3.jpeg'; this.onerror=null;">
+                <span>MATTEO<span class="text-brand-400">_</span>PERINI</span>
+            </a>
+            <nav class="hidden md:flex gap-8 items-center font-medium text-sm">
+                <a href="#portfolio" class="hover:text-brand-400 transition-colors">Lavori</a>
+                <a href="#infrastruttura" class="hover:text-brand-400 transition-colors">Tecnologia</a>
+                <a href="#pacchetti" class="hover:text-brand-400 transition-colors">Pacchetti</a>
+                <a href="#bio" class="hover:text-brand-400 transition-colors">Chi Sono</a>
+                <button onclick="toggleModal('contactModal')" class="border border-brand-500 text-brand-400 px-5 py-2 rounded-md hover:bg-brand-500 hover:text-white transition-all shadow-[0_0_15px_rgba(14,165,233,0.15)]">Preventivo</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="min-h-screen flex items-center justify-center pt-20 px-6 relative overflow-hidden bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1920&q=80');">
+        <div class="absolute inset-0 bg-zinc-950/85"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-900/40 rounded-full blur-[100px]"></div>
+        
+        <div class="max-w-4xl mx-auto text-center relative z-10">
+            <p class="font-mono text-brand-400 mb-4 tracking-wide font-bold">Sviluppo Web Custom & Performance</p>
+            <h1 class="text-5xl md:text-7xl font-extrabold text-white leading-tight mb-6 tracking-tight">
+                Architetture digitali uniche,<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-brand-300">costruite riga per riga.</span>
+            </h1>
+            <p class="text-lg md:text-xl text-zinc-400 mb-10 max-w-2xl mx-auto">
+                Progetto e sviluppo siti web, vetrine dinamiche ed e-commerce ad altissime prestazioni. Soluzioni su misura, veloci e senza compromessi per il tuo business.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="#pacchetti" class="bg-brand-500 text-white font-semibold px-8 py-3 rounded-md hover:bg-brand-400 transition-colors shadow-[0_0_20px_rgba(14,165,233,0.3)]">Scopri i Pacchetti</a>
+                <button onclick="toggleModal('contactModal')" class="bg-zinc-900 text-white font-semibold px-8 py-3 rounded-md border border-zinc-700 hover:border-brand-500 transition-colors">Richiedi Preventivo</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- PORTFOLIO -->
+    <section id="portfolio" class="py-24 px-6 border-t border-zinc-800 relative z-10 bg-zinc-950">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-3xl font-bold text-white mb-2">I Miei Lavori</h2>
+            <p class="text-zinc-400 mb-12">I layout originali e le interfacce costruite riga per riga. (Clicca per ingrandire la foto o visita i siti live)</p>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Progetto CintheC -->
+                <div class="group relative rounded-none bg-zinc-900/50 border border-zinc-800 flex flex-col hover:border-brand-500 transition-colors">
+                    <div class="h-64 w-full bg-zinc-800 relative cursor-pointer overflow-hidden group-hover:opacity-90 transition-opacity shrink-0" 
+                         onclick="openImageModal('foto/foto1.png')">
+                        <img src="foto/foto1.png" alt="CintheC Preview" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/800x600/27272a/7dd3fc?text=foto/foto1.png+(oppure+.jpg)'">
+                        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-950/40">
+                            <span class="font-mono text-brand-300 bg-zinc-950/80 px-3 py-1 border border-brand-500/50">🔍 Ingrandisci</span>
+                        </div>
+                    </div>
+                    <div class="p-6 flex flex-col flex-1">
+                        <h3 class="text-xl font-bold text-white">CintheC</h3>
+                        <p class="text-brand-400 text-sm font-mono mt-1 mb-4">Sito Web Vetrina Multi-pagina</p>
+                        
+                        <div class="flex gap-2 flex-wrap mb-6">
+                            <span class="text-xs font-mono bg-zinc-950 px-3 py-1 text-zinc-300 border border-zinc-700">HTML</span>
+                            <span class="text-xs font-mono bg-zinc-950 px-3 py-1 text-zinc-300 border border-zinc-700">CSS</span>
+                            <span class="text-xs font-mono bg-zinc-950 px-3 py-1 text-zinc-300 border border-zinc-700">Mobile First</span>
+                        </div>
+                        
+                        <div class="mt-auto pt-4 border-t border-zinc-800/50">
+                            <a href="https://www.cinthec.it" target="_blank" class="inline-flex items-center gap-2 text-brand-400 hover:text-white text-sm font-semibold transition-colors group-hover:underline underline-offset-4">
+                                Visita il sito live (www.cinthec.it)
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progetto Artist Landing Page (Eleonora Biasco) -->
+                <div class="group relative rounded-none bg-zinc-900/50 border border-zinc-800 flex flex-col hover:border-brand-500 transition-colors">
+                    <div class="h-64 w-full bg-zinc-800 relative cursor-pointer overflow-hidden group-hover:opacity-90 transition-opacity shrink-0" 
+                         onclick="openImageModal('foto/foto2.png')">
+                        <img src="foto/foto2.png" alt="Artist Landing Preview" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/800x600/27272a/7dd3fc?text=foto/foto2.png+(oppure+.jpg)'">
+                        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-950/40">
+                            <span class="font-mono text-brand-300 bg-zinc-950/80 px-3 py-1 border border-brand-500/50">🔍 Ingrandisci</span>
+                        </div>
+                    </div>
+                    <div class="p-6 flex flex-col flex-1">
+                        <h3 class="text-xl font-bold text-white">Eleonora Biasco | Violinista</h3>
+                        <p class="text-brand-400 text-sm font-mono mt-1 mb-4">Artist Landing Page / Booking</p>
+                        
+                        <div class="flex gap-2 flex-wrap mb-6">
+                            <span class="text-xs font-mono bg-zinc-950 px-3 py-1 text-zinc-300 border border-zinc-700">Tailwind CSS</span>
+                            <span class="text-xs font-mono bg-zinc-950 px-3 py-1 text-zinc-300 border border-zinc-700">JavaScript</span>
+                        </div>
+
+                        <div class="mt-auto pt-4 border-t border-zinc-800/50">
+                            <a href="https://matteo-perini.github.io/eleonora-biasco-violinista/" target="_blank" class="inline-flex items-center gap-2 text-brand-400 hover:text-white text-sm font-semibold transition-colors group-hover:underline underline-offset-4">
+                                Visita il sito live (Eleonora Biasco)
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TECNOLOGIA / INFRASTRUTTURA -->
+    <section id="infrastruttura" class="py-24 px-6 bg-zinc-900/30 border-t border-zinc-800">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-white mb-4">L'Infrastruttura dietro al Codice.</h2>
+                <p class="text-zinc-400 max-w-3xl mx-auto">Tecnologie di livello enterprise spiegate in modo trasparente.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-zinc-900 p-8 rounded-none border border-zinc-800 transition-all duration-300 hover:-translate-y-2 hover:rotate-1 hover:shadow-[0_0_25px_rgba(56,189,248,0.3)] hover:border-brand-400 cursor-default">
+                    <h3 class="text-xl font-bold text-brand-400 mb-3">1. Repository & Sicurezza</h3>
+                    <p class="text-zinc-300 text-sm leading-relaxed">Utilizzo <strong>GitHub</strong>, il più grande servizio di versionamento al mondo. Funziona come una "cassaforte intelligente" (Repository) online che salva la cronologia di ogni singola riga di codice che scrivo.</p>
+                </div>
+
+                <div class="bg-zinc-900 p-8 rounded-none border border-zinc-800 transition-all duration-300 hover:-translate-y-2 hover:-rotate-1 hover:shadow-[0_0_25px_rgba(56,189,248,0.3)] hover:border-brand-400 cursor-default">
+                    <h3 class="text-xl font-bold text-brand-400 mb-3">2. Hosting & Distribuzione</h3>
+                    <p class="text-zinc-300 text-sm leading-relaxed">Per i siti vetrina sfrutto piattaforme globali come <strong>Vercel</strong> o <strong>GitHub Pages</strong>. Questi servizi distribuiscono il sito su una rete mondiale (CDN), permettendo al sito di aprirsi istantaneamente da ogni parte del mondo.</p>
+                </div>
+
+                <div class="bg-zinc-900 p-8 rounded-none border border-zinc-800 transition-all duration-300 hover:-translate-y-2 hover:rotate-1 hover:shadow-[0_0_25px_rgba(56,189,248,0.3)] hover:border-brand-400 cursor-default">
+                    <h3 class="text-xl font-bold text-brand-400 mb-3">3. Database e Cloud Storage</h3>
+                    <p class="text-zinc-300 text-sm leading-relaxed">Quando il sito ha bisogno di un pannello amministratore uso <strong>Firebase</strong> (un'infrastruttura di Google). Offre un database rapido e un sistema di "Storage" ultra sicuro dove vengono ospitati i tuoi documenti o foto dinamiche.</p>
+                </div>
+
+                <div class="bg-zinc-900 p-8 rounded-none border border-zinc-800 transition-all duration-300 hover:-translate-y-2 hover:-rotate-1 hover:shadow-[0_0_25px_rgba(56,189,248,0.3)] hover:border-brand-400 cursor-default">
+                    <h3 class="text-xl font-bold text-brand-400 mb-3">4. Server Dedicati (E-commerce)</h3>
+                    <p class="text-zinc-300 text-sm leading-relaxed">Per le piattaforme di vendita configuro <strong>VPS (Virtual Private Server)</strong>: server privati dedicati solo al tuo e-commerce, collegati a <strong>PostgreSQL</strong>. Il tutto interfacciato con <strong>Stripe</strong> per transazioni sicure.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PACCHETTI -->
+    <section id="pacchetti" class="py-24 px-6 border-t border-zinc-800">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-white mb-4">I Miei Servizi</h2>
+                <p class="text-zinc-400">Clicca sui pacchetti per leggere i dettagli dell'architettura tecnica.</p>
+            </div>
+
+            <div class="grid lg:grid-cols-3 gap-5 max-w-4xl mx-auto items-start">
+                
+                <!-- PACCHETTO 1 -->
+                <div class="perspective cursor-pointer h-[420px]" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-inner transform-3d w-full h-full">
+                        <div class="flip-front backface-hidden bg-zinc-900/50 p-5 border border-zinc-800 flex flex-col h-full hover:border-brand-500 transition-colors">
+                            <h3 class="text-lg font-bold text-white mb-1">Vetrina Statica</h3>
+                            <p class="text-zinc-400 text-[11px] mb-4">Attività online con la massima velocità e il minimo peso.</p>
+                            <div class="mb-3">
+                                <span class="text-2xl font-bold text-white">€ 200</span>
+                            </div>
+                            <ul class="space-y-1.5 mb-6 flex-1 text-[11px] text-zinc-300">
+                                <li class="flex items-center gap-2">✓ Sviluppo HTML/CSS su misura</li>
+                                <li class="flex items-center gap-2">✓ Responsive (Mobile & Desktop)</li>
+                                <li class="flex items-center gap-2">✓ Hosting super-veloce (Vercel)</li>
+                                <li class="flex items-center gap-2">✓ Modulo di contatto base</li>
+                            </ul>
+                            <div class="pt-3 border-t border-zinc-800 mt-auto">
+                                <p class="text-xs text-brand-400 font-mono font-bold mb-0.5">+ Canone Annuo: € 60</p>
+                                <p class="text-[10px] text-zinc-400">Rinnovo Dominio e manutenzione hosting.</p>
+                                <p class="text-center text-[9px] text-zinc-500 mt-2 flex justify-center items-center gap-1"><i>Clicca per girare</i> <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></p>
+                            </div>
+                        </div>
+                        
+                        <div class="flip-back backface-hidden bg-zinc-900 p-5 border border-brand-400 flex flex-col h-full shadow-[0_0_15px_rgba(56,189,248,0.2)]">
+                            <h3 class="text-base font-bold text-brand-400 mb-3 border-b border-zinc-700 pb-2">Dettaglio Architettura</h3>
+                            <p class="text-zinc-300 text-xs leading-relaxed mb-3">
+                                Sviluppato interamente con codice nativo (HTML5, CSS3/Tailwind, Vanilla JS) senza costruttori terzi.
+                            </p>
+                            <p class="text-zinc-300 text-xs leading-relaxed mb-3">
+                                Tempi di risposta (TTFB) inferiori ai 50ms, massimizzando il punteggio Core Web Vitals su Google.
+                            </p>
+                            <p class="text-zinc-400 text-[11px] mt-auto">Perfetto per professionisti e landing page mirate.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PACCHETTO 2 -->
+                <div class="perspective cursor-pointer h-[420px]" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-inner transform-3d w-full h-full">
+                        <div class="flip-front backface-hidden bg-zinc-900 p-5 border border-brand-500 flex flex-col h-full shadow-[0_0_15px_rgba(14,165,233,0.15)] relative">
+                            <div class="absolute top-0 right-4 -translate-y-1/2 bg-brand-500 text-white text-[9px] font-bold px-2 py-0.5 uppercase tracking-wide border border-zinc-900">Più Richiesto</div>
+                            <h3 class="text-lg font-bold text-white mb-1">Vetrina Dinamica</h3>
+                            <p class="text-zinc-400 text-[11px] mb-4">Aggiorna foto, brani o progetti in totale autonomia.</p>
+                            <div class="mb-3">
+                                <span class="text-2xl font-bold text-white">€ 300</span>
+                            </div>
+                            <ul class="space-y-1.5 mb-6 flex-1 text-[11px] text-zinc-300">
+                                <li class="flex items-center gap-2">✓ Tutto quello incluso nella base</li>
+                                <li class="flex items-center gap-2 text-brand-400 font-medium">✓ Pannello Admin Privato</li>
+                                <li class="flex items-center gap-2">✓ Integrazione Database (Firebase)</li>
+                                <li class="flex items-center gap-2">✓ Upload autonomo file/immagini</li>
+                            </ul>
+                            <div class="pt-3 border-t border-zinc-800 mt-auto">
+                                <p class="text-xs text-brand-400 font-mono font-bold mb-0.5">+ Canone Annuo: € 60</p>
+                                <p class="text-[10px] text-zinc-400">Costi di Storage per i file su cloud.</p>
+                                <p class="text-center text-[9px] text-brand-500 mt-2 flex justify-center items-center gap-1"><i>Clicca per girare</i> <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></p>
+                            </div>
+                        </div>
+                        
+                        <div class="flip-back backface-hidden bg-zinc-900 p-5 border border-brand-400 flex flex-col h-full shadow-[0_0_15px_rgba(56,189,248,0.2)]">
+                            <h3 class="text-base font-bold text-brand-400 mb-3 border-b border-zinc-700 pb-2">Dettaglio Architettura</h3>
+                            <p class="text-zinc-300 text-xs leading-relaxed mb-3">
+                                Ottica "Headless": frontend separato che dialoga in tempo reale tramite API sicure con Firebase.
+                            </p>
+                            <p class="text-zinc-300 text-xs leading-relaxed mb-3">
+                                Interfaccia protetta da login (Admin Panel) per operazioni CRUD su foto, brani e news in piena autonomia.
+                            </p>
+                            <p class="text-zinc-400 text-[11px] mt-auto">Ideale per artisti e studi con contenuti frequenti.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PACCHETTO 3 -->
+                <div class="perspective cursor-pointer h-[420px]" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-inner transform-3d w-full h-full">
+                        <div class="flip-front backface-hidden bg-zinc-900/50 p-5 border border-zinc-800 flex flex-col h-full hover:border-brand-500 transition-colors">
+                            <h3 class="text-lg font-bold text-white mb-1">Store & E-commerce</h3>
+                            <p class="text-zinc-400 text-[11px] mb-4">Vendita completa, catalogo e pagamenti protetti.</p>
+                            <div class="mb-3">
+                                <span class="text-2xl font-bold text-white">€ 500</span>
+                            </div>
+                            <ul class="space-y-1.5 mb-6 flex-1 text-[11px] text-zinc-300">
+                                <li class="flex items-center gap-2">✓ Layout prodotti personalizzato</li>
+                                <li class="flex items-center gap-2">✓ Integrazione API Stripe</li>
+                                <li class="flex items-center gap-2">✓ Gestione carrello/checkout</li>
+                                <li class="flex items-center gap-2">✓ Server Dedicati (VPS)</li>
+                            </ul>
+                            <div class="pt-3 border-t border-zinc-800 mt-auto">
+                                <p class="text-xs text-brand-400 font-mono font-bold mb-0.5">+ Canone Annuo: € 100</p>
+                                <p class="text-[10px] text-zinc-400">Per server privato VPS e transazioni.</p>
+                                <p class="text-center text-[9px] text-zinc-500 mt-2 flex justify-center items-center gap-1"><i>Clicca per girare</i> <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></p>
+                            </div>
+                        </div>
+
+                        <div class="flip-back backface-hidden bg-zinc-900 p-5 border border-brand-400 flex flex-col h-full shadow-[0_0_15px_rgba(56,189,248,0.2)]">
+                            <h3 class="text-base font-bold text-brand-400 mb-3 border-b border-zinc-700 pb-2">Dettaglio Architettura</h3>
+                            <p class="text-zinc-300 text-xs leading-relaxed mb-3">
+                                Architettura Enterprise su Virtual Private Server (VPS) dedicato per gestire picchi di traffico.
+                            </p>
+                            <p class="text-zinc-300 text-xs leading-relaxed mb-3">
+                                Database relazionale (PostgreSQL) e pagamenti server-side crittografati tramite API Stripe.
+                            </p>
+                            <p class="text-zinc-400 text-[11px] mt-auto">Soluzione definitiva per vendere online senza limiti.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="mt-12 text-center">
+                <button onclick="toggleModal('contactModal')" class="bg-brand-500 text-white font-bold py-3 px-8 rounded-none hover:bg-brand-400 transition-all uppercase tracking-wider text-sm shadow-[0_0_15px_rgba(14,165,233,0.3)] hover:shadow-[0_0_25px_rgba(14,165,233,0.6)]">Richiedi Preventivo</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- BIO -->
+    <section id="bio" class="py-24 px-6 bg-zinc-900/30 border-t border-zinc-800 flex-grow">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row gap-12 items-center">
+            
+            <!-- Foto grande a sinistra con Effetto 3D -->
+            <div class="w-full md:w-5/12 h-96 bg-zinc-900 rounded-none border-2 border-brand-500/50 overflow-hidden relative shadow-2xl shrink-0 photo-3d">
+                <img src="foto/foto3.jpg" alt="Matteo Perini" class="w-full h-full object-cover" onerror="this.src='foto/foto3.jpeg'; this.onerror=null;">
+                <div class="absolute inset-0 flex items-center justify-center bg-zinc-950/60 font-mono text-sm text-zinc-400 px-4 text-center -z-10">
+                    [foto3.jpg]
+                </div>
+            </div>
+
+            <!-- Testo a destra incorniciato -->
+            <div class="w-full md:w-7/12 bg-zinc-900/60 border border-zinc-800 p-8 relative shadow-2xl hover:border-brand-500/40 transition-colors">
+                <div class="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-brand-400"></div>
+                <div class="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-brand-400"></div>
+
+                <h2 class="text-3xl font-bold text-white mb-6">Dietro il Codice.</h2>
+                <div class="space-y-4 text-zinc-400 leading-relaxed text-base">
+                    <p>
+                        Sono entrato in questo settore da meno di un anno, ma la passione viscerale per il codice e la programmazione mi ha spinto fin da subito a studiare e applicarmi con una disciplina rigorosa, maturando un'esperienza pratica immediata.
+                    </p>
+                    <p>
+                        Lavoro già con diversi clienti, e tutti sono pienamente soddisfatti. Il mio punto di forza è la versatilità: quando sorge un problema o c'è da rattoppare e sistemare un dettaglio, mi metto subito all'opera, ci si accorda sempre e si trova una quadra per far filare tutto liscio.
+                    </p>
+                    <p>
+                        Credo fermamente che i pacchetti non debbano essere una regola rigida e immutabile: ogni attività ha esigenze uniche, per questo strutturo sempre <strong>preventivi e accordi completamente personalizzati</strong> su misura per ciascun cliente.
+                    </p>
+                    <p>
+                        Inoltre, sono pienamente disponibile per effettuare call e parlare direttamente con il cliente, così da definire ogni dettaglio faccia a faccia prima di iniziare a sviluppare.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER COMPRESSO -->
+    <footer class="relative bg-zinc-950 py-6 px-6 border-t border-zinc-900 text-xs text-zinc-400 mt-auto overflow-hidden">
+        
+        <!-- Trama di sfondo azzurrina (Pattern a puntini high-tech) -->
+        <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#38bdf8 1.5px, transparent 1.5px); background-size: 20px 20px;"></div>
+        
+        <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10 items-center">
+            
+            <!-- Sinistra: Contatti con Icone e dati reali -->
+            <div class="flex flex-col gap-1.5 items-center md:items-start text-center md:text-left">
+                <a href="https://instagram.com/_ricciioo_" target="_blank" class="flex items-center gap-2 hover:text-brand-400 transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm3.98-10.181a1.44 1.44 0 11-2.88 0 1.44 1.44 0 012.88 0 z"/></svg>
+                    Instagram: @_ricciioo_
+                </a>
+                <a href="https://wa.me/393277179868" target="_blank" class="flex items-center gap-2 hover:text-brand-400 transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                    WhatsApp: 3277179868
+                </a>
+                <a href="mailto:matteoperini94@gmail.com" class="flex items-center gap-2 hover:text-brand-400 transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" /></svg>
+                    Email: matteoperini94@gmail.com
+                </a>
+            </div>
+
+            <!-- Centro: Legale, Privacy e Copyright -->
+            <div class="flex flex-col items-center gap-1.5">
+                <h4 class="text-white font-bold text-[11px] uppercase tracking-wider">Trasparenza & Legale</h4>
+                <div class="flex gap-4 text-[11px]">
+                    <a href="privacy.html" class="hover:text-brand-400 transition-colors underline underline-offset-4">Privacy & Policy</a>
+                    <a href="note-legali.html" class="hover:text-brand-400 transition-colors underline underline-offset-4">Note Legali</a>
+                </div>
+                <p class="text-zinc-500 font-mono text-[10px] mt-1">&copy; 2026 SVILUPPO WEB NATIVO.</p>
+            </div>
+
+            <!-- Destra: Spazio libero -->
+            <div></div>
+            
+        </div>
+    </footer>
+
+    <!-- ========================================== -->
+    <!-- ZONA MODAL / POPUP -->
+    <!-- ========================================== -->
+
+    <!-- LIGHTBOX PER INGRANDIRE LE IMMAGINI -->
+    <div id="imageLightbox" class="hidden fixed inset-0 bg-zinc-950/95 z-[200] justify-center items-center p-4 cursor-pointer" onclick="closeImageModal()">
+        <button class="absolute top-6 right-6 text-white text-4xl font-bold hover:text-brand-400">&times;</button>
+        <img id="lightboxImage" src="" alt="Fullscreen Image" class="max-w-full max-h-[90vh] object-contain border border-zinc-800 shadow-2xl">
+    </div>
+
+    <!-- MODAL PREVENTIVO / CONTATTI -->
+    <div id="contactModal" class="hidden fixed inset-0 bg-zinc-950/90 backdrop-blur-sm z-[100] items-center justify-center p-4">
+        <div class="bg-zinc-900 border border-brand-500 rounded-none p-8 max-w-xl w-full relative shadow-[0_0_40px_rgba(14,165,233,0.15)]">
+            <button onclick="toggleModal('contactModal')" class="absolute top-4 right-4 text-zinc-400 hover:text-white text-3xl">&times;</button>
+            <h3 class="text-2xl font-bold text-white mb-2">Richiedi un Preventivo</h3>
+            <p class="text-zinc-400 text-sm mb-6">Compila i campi. Riceverò i tuoi dati via email in tempo reale.</p>
+            
+            <form id="contactForm" action="https://formspree.io/f/xkjnadop" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-400 mb-1">Nome o Azienda</label>
+                    <input type="text" name="name" required class="w-full bg-zinc-950 border border-zinc-800 rounded-none px-4 py-3 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-400 mb-1">Email</label>
+                    <input type="email" name="email" required class="w-full bg-zinc-950 border border-zinc-800 rounded-none px-4 py-3 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-400 mb-1">Servizio d'interesse e Dettagli</label>
+                    <textarea name="message" required rows="4" class="w-full bg-zinc-950 border border-zinc-800 rounded-none px-4 py-3 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all resize-y" placeholder="Es. Vetrina Dinamica, vorrei un preventivo per..."></textarea>
+                </div>
+                <button type="submit" id="submitBtn" class="w-full bg-brand-500 text-white font-bold py-3 mt-2 rounded-none hover:bg-brand-400 transition-colors uppercase tracking-wide">Invia Messaggio</button>
+                
+                <!-- Messaggio di successo nascosto inizialmente -->
+                <div id="formStatus" class="hidden text-center text-brand-400 font-mono text-sm py-4 bg-zinc-950 border border-brand-500/50 mt-2">
+                    ✓ Messaggio inviato correttamente! Ti risponderò al più presto.
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPT GESTIONE MODAL, LIGHTBOX E INVIO AJAX -->
+    <script>
+        function toggleModal(modalID) {
+            const modal = document.getElementById(modalID);
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                // Resetta il form e ripristina il bottone quando chiudi il modale
+                document.getElementById('contactForm').reset();
+                document.getElementById('formStatus').classList.add('hidden');
+                document.getElementById('submitBtn').style.display = 'block';
+            }
+        }
+
+        function openImageModal(imageSrc) {
+            const lightbox = document.getElementById('imageLightbox');
+            const lightboxImg = document.getElementById('lightboxImage');
+            lightboxImg.src = imageSrc;
+            lightbox.classList.remove('hidden');
+            lightbox.classList.add('flex');
+        }
+
+        function closeImageModal() {
+            const lightbox = document.getElementById('imageLightbox');
+            lightbox.classList.add('hidden');
+            lightbox.classList.remove('flex');
+            document.getElementById('lightboxImage').src = "";
+        }
+
+        // Gestione invio form senza ricaricare la pagina (AJAX)
+        var form = document.getElementById("contactForm");
+        
+        async function handleSubmit(event) {
+            event.preventDefault();
+            var status = document.getElementById("formStatus");
+            var submitBtn = document.getElementById("submitBtn");
+            var data = new FormData(event.target);
+            
+            fetch(event.target.action, {
+                method: form.method,
+                body: data,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            }).then(response => {
+                if (response.ok) {
+                    submitBtn.style.display = 'none'; // Nasconde il bottone
+                    status.classList.remove('hidden'); // Mostra il box di successo
+                    form.reset();
+                } else {
+                    response.json().then(data => {
+                        if (Object.hasOwn(data, 'errors')) {
+                            alert(data["errors"].map(error => error["message"]).join(", "));
+                        } else {
+                            alert("Errore nell'invio. Riprova.");
+                        }
+                    })
+                }
+            }).catch(error => {
+                alert("Errore di connessione. Controlla la rete.");
+            });
+        }
+        
+        form.addEventListener("submit", handleSubmit);
+
+        window.addEventListener('click', function(e) {
+            const modal = document.getElementById('contactModal');
+            if (e.target === modal) {
+                toggleModal('contactModal');
+            }
+        });
+    </script>
+</body>
+</html>
