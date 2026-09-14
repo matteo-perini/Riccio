@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="it" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pannello Admin | Gestione Clienti & Scadenze</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            300: '#7dd3fc', 
+                            400: '#38bdf8', 
+                            500: '#0ea5e9', 
+                            900: '#0c4a6e', 
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .dynamic-btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.25s ease;
+            z-index: 1;
+        }
+        .dynamic-btn:hover {
+            background-color: #0ea5e9;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+            border-color: #38bdf8;
+        }
+        table tr {
+            transition: background-color 0.15s ease;
+        }
+        table tbody tr:hover {
+            background-color: rgba(24, 24, 27, 0.8) !important;
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-zinc-300 font-sans antialiased selection:bg-brand-500 selection:text-white min-h-screen flex flex-col">
+
+    <!-- POP-UP DI NOTIFICA / ESEGUITO -->
+    <div id="successToast" class="fixed top-5 right-5 z-[200] transform translate-y-[-200%] opacity-0 transition-all duration-300 bg-zinc-900 border-2 border-green-500 text-white px-6 py-4 shadow-2xl flex items-center gap-3">
+        <span class="w-3 h-3 bg-green-500 animate-ping"></span>
+        <div>
+            <h4 class="font-bold text-sm text-green-400">Operazione completata</h4>
+            <p id="toastMessage" class="text-xs text-zinc-300 font-mono">Salvataggio eseguito con successo!</p>
+        </div>
+    </div>
+
+    <!-- SCHERMATA DI ACCESSO CON GOOGLE (Se non autenticato) -->
+    <div id="authScreen" class="fixed inset-0 bg-zinc-950 z-50 flex items-center justify-center p-4">
+        <div class="bg-zinc-900 border-2 border-brand-400 p-8 max-w-md w-full shadow-2xl text-center">
+            <div class="font-mono text-brand-400 text-xs mb-2">SECURE_GATEWAY_V1.0</div>
+            <h2 class="text-2xl font-bold text-white mb-6">Area Riservata Admin</h2>
+            
+            <button onclick="handleGoogleLogin()" class="dynamic-btn w-full bg-white text-zinc-950 font-bold py-3.5 px-4 flex items-center justify-center gap-3 text-xs tracking-wide shadow-lg hover:bg-zinc-100 cursor-pointer">
+                <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+                <span>Accedi con Google</span>
+            </button>
+
+            <div id="loginError" class="hidden mt-4 text-red-400 text-xs font-mono text-center"></div>
+            <div class="mt-6 text-center">
+                <a href="index.html" class="text-xs text-zinc-500 hover:text-brand-400 font-mono">← Torna al sito principale</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANNELLO PRINCIPALE (Visibile dopo il login) -->
+    <div id="adminPanel" class="hidden flex-1 flex flex-col">
+        <!-- Header Pannello -->
+        <header class="bg-zinc-900 border-b border-brand-500/40 px-6 py-4 flex justify-between items-center shadow-md">
+            <div class="flex items-center gap-3">
+                <span class="w-3 h-3 bg-green-500 animate-pulse"></span>
+                <h1 class="font-mono font-bold text-white text-base sm:text-lg">DASHBOARD_CLIENTI<span class="text-brand-400">_</span>ADMIN</h1>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="index.html" class="text-xs font-mono text-zinc-300 hover:text-brand-400 border border-zinc-700 bg-zinc-800 px-3 py-2 cursor-pointer transition">Torna al Sito</a>
+                <button onclick="openClientModal()" class="dynamic-btn bg-brand-500 text-white text-xs font-bold px-4 py-2 uppercase tracking-wide cursor-pointer">+ Nuovo Cliente</button>
+                <button onclick="handleLogout()" class="text-xs font-mono text-zinc-400 hover:text-red-400 border border-zinc-700 px-3 py-2 cursor-pointer transition">Esci</button>
+            </div>
+        </header>
+
+        <!-- Contenuto Tabella Clienti -->
+        <main class="max-w-7xl mx-auto w-full p-4 sm:p-6 flex-1 space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-4 w-full sm:w-auto">
+                    <h2 class="text-xl font-bold text-white whitespace-nowrap">Elenco Clienti</h2>
+                    <span id="clientCount" class="text-xs font-mono text-brand-400 bg-brand-500/10 px-3 py-2 border border-brand-500/30">Totale: 0 clienti</span>
+                </div>
+                <!-- Barra di Ricerca Quadrata -->
+                <div class="w-full sm:w-72">
+                    <input type="text" id="searchInput" oninput="filterClients()" placeholder="Cerca cliente o sito..." class="w-full bg-zinc-900 border border-brand-500/40 px-4 py-2 text-xs text-white focus:outline-none focus:border-brand-400 font-mono">
+                </div>
+            </div>
+
+            <!-- Tabella Quadrata -->
+            <div class="bg-zinc-900 border border-brand-500/40 overflow-x-auto shadow-lg">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-zinc-950 text-brand-400 font-mono border-b border-brand-500/30">
+                            <th class="p-3 w-12 text-center">N°</th>
+                            <th class="p-3">Cliente / Azienda</th>
+                            <th class="p-3">Sito Web</th>
+                            <th class="p-3">Prezzo Setup</th>
+                            <th class="p-3">Canone Annuo</th>
+                            <th class="p-3">Scadenza Canone</th>
+                            <th class="p-3">Dominio Personalizzato</th>
+                            <th class="p-3">Scadenza Dominio</th>
+                            <th class="p-3 text-center">Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clientsTableBody" class="divide-y divide-zinc-800 text-zinc-300">
+                        <tr>
+                            <td colspan="9" class="p-6 text-center text-zinc-500">Caricamento dati in corso...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODALE AGGIUNGI / MODIFICA CLIENTE (Quadrata) -->
+    <div id="clientModal" class="hidden fixed inset-0 bg-zinc-950/90 backdrop-blur-sm z-[100] items-center justify-center p-4">
+        <div class="bg-zinc-900 border-2 border-brand-500 p-6 sm:p-8 max-w-lg w-full relative shadow-2xl">
+            <button onclick="closeClientModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-white text-3xl cursor-pointer">&times;</button>
+            <h3 id="modalTitle" class="text-xl font-bold text-white mb-4">Aggiungi Nuovo Cliente</h3>
+            
+            <form id="clientForm" onsubmit="saveClient(event)" class="space-y-4">
+                <input type="hidden" id="clientId">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-400 mb-1">Nome Cliente / Azienda *</label>
+                    <input type="text" id="clientName" required class="w-full bg-zinc-950 border border-brand-500/50 px-3 py-2 text-white text-sm focus:outline-none focus:border-brand-400">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-400 mb-1">Nome del Sito / URL</label>
+                        <input type="text" id="clientWebsite" placeholder="Es. www.sito.it" class="w-full bg-zinc-950 border border-brand-500/50 px-3 py-2 text-white text-sm focus:outline-none focus:border-brand-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-400 mb-1">Prezzo Setup (€)</label>
+                        <input type="number" id="clientPrice" placeholder="Es. 300" class="w-full bg-zinc-950 border border-brand-500/50 px-3 py-2 text-white text-sm focus:outline-none focus:border-brand-400">
+                    </div>
+                </div>
+
+                <!-- Sezione Canone con selettore Sì/No -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-400 mb-1">Canone Annuo</label>
+                        <select id="hasCanone" onchange="toggleCanoneFields()" class="w-full bg-zinc-950 border border-brand-500/50 px-3 py-2 text-white text-sm focus:outline-none focus:border-brand-400">
+                            <option value="Sì">Sì</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-400 mb-1">Importo (€)</label>
+                        <input type="number" id="clientCanone" placeholder="Es. 60" class="w-full bg-zinc-950 border border-brand-500/50 px-3 py-2 text-white text-sm focus:outline-none focus:border-brand-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-400 mb-1">Scadenza Canone</label>
+                        <input type="date" id="clientCanoneExpire" class="w-full bg-zinc-950 border border-brand-500/50 px-3 py-2 text-white text-sm focus:outline-none focus:border-brand-400 font-mono">
+                    </div>
+                </div>
+
+                <!-- Sezione Dominio con selettore Sì/No -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-400 mb-1">Dominio Personalizzato</label>
+                        <select id="clientHasDomain" onchange="toggleDomainFields()" class="w-full bg-zinc-950 border border-brand-500/50 px-3 py-2 text-white text-sm focus:outline-none focus:border-brand-400">
+                            <option value="Sì">Sì</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-400 mb-1">Scadenza Dominio</label>
+                        <input type="date" id="clientDomainExpire" class="w-full bg-zinc-950 border border-brand-500/50 px-3 py-2 text-white text-sm focus:outline-none focus:border-brand-400 font-mono">
+                    </div>
+                </div>
+                <button type="submit" id="btnSaveClient" class="dynamic-btn w-full bg-brand-500 text-white font-bold py-3 uppercase text-xs tracking-wide mt-2 cursor-pointer">Salva Cliente</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPT FIREBASE & LOGICA ADMIN -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyBIdEOFzQxyHclcXEJDMU1fNTBhJ07tP-Y",
+          authDomain: "riccio-web-admin.firebaseapp.com",
+          projectId: "riccio-web-admin",
+          storageBucket: "riccio-web-admin.firebasestorage.app",
+          messagingSenderId: "188625214945",
+          appId: "1:188625214945:web:e7efe1732ea66dd19706a0"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const ALLOWED_ADMIN_EMAIL = "matteoperini94@gmail.com";
+        let allClientsData = [];
+
+        function showToast(message = "Salvataggio eseguito con successo!") {
+            const toast = document.getElementById('successToast');
+            const msgEl = document.getElementById('toastMessage');
+            msgEl.textContent = message;
+            
+            toast.classList.remove('translate-y-[-200%]', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-[-200%]', 'opacity-0');
+            }, 3000);
+        }
+
+        window.toggleCanoneFields = function() {
+            const hasCanone = document.getElementById('hasCanone').value;
+            const inputAmount = document.getElementById('clientCanone');
+            const inputDate = document.getElementById('clientCanoneExpire');
+            if (hasCanone === 'No') {
+                inputAmount.value = '';
+                inputAmount.disabled = true;
+                inputAmount.classList.add('opacity-40', 'cursor-not-allowed', 'bg-zinc-900');
+                inputDate.value = '';
+                inputDate.disabled = true;
+                inputDate.classList.add('opacity-40', 'cursor-not-allowed', 'bg-zinc-900');
+            } else {
+                inputAmount.disabled = false;
+                inputAmount.classList.remove('opacity-40', 'cursor-not-allowed', 'bg-zinc-900');
+                inputDate.disabled = false;
+                inputDate.classList.remove('opacity-40', 'cursor-not-allowed', 'bg-zinc-900');
+            }
+        }
+
+        window.toggleDomainFields = function() {
+            const hasDomain = document.getElementById('clientHasDomain').value;
+            const inputDate = document.getElementById('clientDomainExpire');
+            if (hasDomain === 'No') {
+                inputDate.value = '';
+                inputDate.disabled = true;
+                inputDate.classList.add('opacity-40', 'cursor-not-allowed', 'bg-zinc-900');
+            } else {
+                inputDate.disabled = false;
+                inputDate.classList.remove('opacity-40', 'cursor-not-allowed', 'bg-zinc-900');
+            }
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                if (user.email !== ALLOWED_ADMIN_EMAIL) {
+                    await signOut(auth);
+                    document.getElementById('adminPanel').classList.add('hidden');
+                    document.getElementById('authScreen').classList.remove('hidden');
+                    const errDiv = document.getElementById('loginError');
+                    errDiv.textContent = "Accesso negato: account non autorizzato.";
+                    errDiv.classList.remove('hidden');
+                    return;
+                }
+                document.getElementById('authScreen').classList.add('hidden');
+                document.getElementById('adminPanel').classList.remove('hidden');
+                loadClients();
+            } else {
+                document.getElementById('adminPanel').classList.add('hidden');
+                document.getElementById('authScreen').classList.remove('hidden');
+            }
+        });
+
+        window.handleGoogleLogin = async () => {
+            const provider = new GoogleAuthProvider();
+            const errDiv = document.getElementById('loginError');
+
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+
+                if (user.email !== ALLOWED_ADMIN_EMAIL) {
+                    await signOut(auth);
+                    errDiv.textContent = "Accesso negato: email non autorizzata.";
+                    errDiv.classList.remove('hidden');
+                    return;
+                }
+
+                errDiv.classList.add('hidden');
+            } catch (err) {
+                console.error(err);
+                errDiv.textContent = "Errore durante l'accesso con Google.";
+                errDiv.classList.remove('hidden');
+            }
+        }
+
+        window.handleLogout = async () => {
+            await signOut(auth);
+        }
+
+        window.openClientModal = (clientData = null) => {
+            document.getElementById('clientModal').classList.remove('hidden');
+            document.getElementById('clientModal').classList.add('flex');
+            const form = document.getElementById('clientForm');
+            form.reset();
+            document.getElementById('clientId').value = '';
+
+            if (clientData) {
+                document.getElementById('modalTitle').textContent = "Modifica Cliente";
+                document.getElementById('clientId').value = clientData.id;
+                document.getElementById('clientName').value = clientData.name || '';
+                document.getElementById('clientWebsite').value = clientData.website || '';
+                document.getElementById('clientPrice').value = clientData.price || '';
+                
+                document.getElementById('hasCanone').value = clientData.hasCanone || 'Sì';
+                document.getElementById('clientCanone').value = clientData.canone === 'N/D' ? '' : (clientData.canone || '');
+                document.getElementById('clientCanoneExpire').value = clientData.canoneExpire === 'N/D' ? '' : (clientData.canoneExpire || '');
+                
+                document.getElementById('clientHasDomain').value = clientData.hasDomain || 'Sì';
+                document.getElementById('clientDomainExpire').value = clientData.domainExpire === 'N/D' ? '' : (clientData.domainExpire || '');
+            } else {
+                document.getElementById('modalTitle').textContent = "Aggiungi Nuovo Cliente";
+                document.getElementById('hasCanone').value = 'Sì';
+                document.getElementById('clientHasDomain').value = 'Sì';
+            }
+            toggleCanoneFields();
+            toggleDomainFields();
+        }
+
+        window.closeClientModal = () => {
+            document.getElementById('clientModal').classList.add('hidden');
+            document.getElementById('clientModal').classList.remove('flex');
+        }
+
+        window.saveClient = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('clientId').value;
+            const name = document.getElementById('clientName').value.trim();
+            const website = document.getElementById('clientWebsite').value.trim();
+            const price = document.getElementById('clientPrice').value.trim();
+            
+            const hasCanone = document.getElementById('hasCanone').value;
+            const rawCanone = document.getElementById('clientCanone').value.trim();
+            const canone = hasCanone === 'No' ? 'N/D' : (rawCanone ? Number(rawCanone) : 0);
+            const canoneExpire = hasCanone === 'No' ? 'N/D' : (document.getElementById('clientCanoneExpire').value || 'N/D');
+            
+            const hasDomain = document.getElementById('clientHasDomain').value;
+            const domainExpire = hasDomain === 'No' ? 'N/D' : (document.getElementById('clientDomainExpire').value || 'N/D');
+
+            const clientPayload = {
+                name,
+                website,
+                price: price ? Number(price) : 0,
+                hasCanone,
+                canone,
+                canoneExpire,
+                hasDomain,
+                domainExpire,
+                updatedAt: serverTimestamp()
+            };
+
+            try {
+                if (id) {
+                    await updateDoc(doc(db, "clienti", id), clientPayload);
+                    showToast("Cliente aggiornato con successo!");
+                } else {
+                    clientPayload.createdAt = serverTimestamp();
+                    await addDoc(collection(db, "clienti"), clientPayload);
+                    showToast("Nuovo cliente aggiunto con successo!");
+                }
+                closeClientModal();
+                loadClients();
+            } catch (err) {
+                console.error("Errore salvataggio:", err);
+                alert("Errore durante il salvataggio nel database: " + err.message);
+            }
+        }
+
+        async function loadClients() {
+            const tbody = document.getElementById('clientsTableBody');
+            const countBadge = document.getElementById('clientCount');
+            try {
+                const snapshot = await getDocs(collection(db, "clienti"));
+                if (snapshot.empty) {
+                    tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-zinc-500">Nessun cliente registrato nel database.</td></tr>`;
+                    countBadge.textContent = "Totale: 0 clienti";
+                    allClientsData = [];
+                    return;
+                }
+
+                allClientsData = [];
+                const today = new Date();
+
+                snapshot.forEach(docSnap => {
+                    const c = docSnap.data();
+                    const id = docSnap.id;
+                    
+                    let minDays = 99999;
+                    if (c.hasCanone !== 'No' && c.canoneExpire && c.canoneExpire !== 'N/D') {
+                        const diff = Math.ceil((new Date(c.canoneExpire) - today) / (1000 * 60 * 60 * 24));
+                        if (diff < minDays) minDays = diff;
+                    }
+                    if (c.hasDomain !== 'No' && c.domainExpire && c.domainExpire !== 'N/D') {
+                        const diff = Math.ceil((new Date(c.domainExpire) - today) / (1000 * 60 * 60 * 24));
+                        if (diff < minDays) minDays = diff;
+                    }
+
+                    let timeVal = 0;
+                    if (c.createdAt && typeof c.createdAt.toMillis === 'function') {
+                        timeVal = c.createdAt.toMillis();
+                    } else if (c.updatedAt && typeof c.updatedAt.toMillis === 'function') {
+                        timeVal = c.updatedAt.toMillis();
+                    }
+
+                    allClientsData.push({
+                        id,
+                        ...c,
+                        minDays: minDays,
+                        createdAtTime: timeVal
+                    });
+                });
+
+                allClientsData.sort((a, b) => a.createdAtTime - b.createdAtTime);
+
+                allClientsData.forEach((client, index) => {
+                    client.creationIndex = index + 1;
+                });
+
+                renderTable(allClientsData);
+            } catch (err) {
+                console.error("Errore caricamento:", err);
+                tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-red-400">Errore nel caricamento dei dati: ${err.message}</td></tr>`;
+            }
+        }
+
+        function renderTable(clientsArray) {
+            const tbody = document.getElementById('clientsTableBody');
+            const countBadge = document.getElementById('clientCount');
+            const today = new Date();
+
+            if (clientsArray.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-zinc-500">Nessun cliente trovato.</td></tr>`;
+                countBadge.textContent = "Totale: 0 clienti";
+                return;
+            }
+
+            let displayList = [...clientsArray];
+            displayList.sort((a, b) => {
+                const aUrgent = a.minDays <= 30 ? 1 : 0;
+                const bUrgent = b.minDays <= 30 ? 1 : 0;
+                if (aUrgent !== bUrgent) return bUrgent - aUrgent;
+                return a.creationIndex - b.creationIndex;
+            });
+
+            let html = '';
+            displayList.forEach(c => {
+                let canoneExpireDisplay = (c.hasCanone === 'No' || !c.canoneExpire || c.canoneExpire === 'N/D') ? '<span class="text-zinc-500 font-mono">N/D</span>' : checkExpireStatus(c.canoneExpire, today);
+                let domainExpireDisplay = (c.hasDomain === 'No' || !c.domainExpire || c.domainExpire === 'N/D') ? '<span class="text-zinc-500 font-mono">N/D</span>' : checkExpireStatus(c.domainExpire, today);
+                let canoneValueDisplay = (c.hasCanone === 'No' || c.canone === 'N/D') ? '<span class="text-zinc-500 font-mono">N/D</span>' : `<span class="font-mono">€ ${c.canone || 0}</span>`;
+
+                const isUrgent = c.minDays <= 30;
+                const rowBg = isUrgent ? 'bg-amber-950/40 border-l-4 border-amber-500' : 'hover:bg-zinc-900/50';
+
+                const clientObj = JSON.stringify({ id: c.id, ...c }).replace(/"/g, '&quot;');
+
+                html += `
+                    <tr class="${rowBg} transition-colors">
+                        <td class="p-3 text-center font-mono font-bold text-brand-400">#${c.creationIndex}</td>
+                        <td class="p-3 font-extrabold text-white text-sm sm:text-base">${c.name || '---'} ${isUrgent ? '<span class="ml-2 text-[10px] bg-amber-500 text-zinc-950 font-bold px-1.5 py-0.5 uppercase">Scadenza vicina</span>' : ''}</td>
+                        <td class="p-3 text-brand-400 font-mono"><a href="${c.website && c.website.startsWith('http') ? c.website : 'https://' + c.website}" target="_blank" class="hover:underline">${c.website || '---'}</a></td>
+                        <td class="p-3 font-mono text-emerald-400 font-semibold">€ ${c.price || 0}</td>
+                        <td class="p-3">${canoneValueDisplay}</td>
+                        <td class="p-3">${canoneExpireDisplay}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 text-[10px] font-mono ${c.hasDomain === 'Sì' ? 'bg-sky-500/10 text-brand-400 border border-brand-500/30' : 'bg-zinc-800 text-zinc-400'}">${c.hasDomain || 'Sì'}</span></td>
+                        <td class="p-3">${domainExpireDisplay}</td>
+                        <td class="p-3 text-center space-x-2">
+                            <button onclick='openClientModal(${clientObj})' class="text-brand-400 hover:text-white font-mono text-[11px] bg-brand-500/10 px-2.5 py-1 border border-brand-500/30 cursor-pointer">Modifica</button>
+                            <button onclick="deleteClient('${c.id}')" class="text-red-400 hover:text-red-300 font-mono text-[11px] bg-red-500/10 px-2.5 py-1 border border-red-500/30 cursor-pointer">Elimina</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+            countBadge.textContent = `Totale: ${clientsArray.length} clienti`;
+        }
+
+        window.filterClients = function() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            if (!query) {
+                renderTable(allClientsData);
+                return;
+            }
+
+            const filtered = allClientsData.filter(c => {
+                const nameMatch = c.name && c.name.toLowerCase().includes(query);
+                const webMatch = c.website && c.website.toLowerCase().includes(query);
+                return nameMatch || webMatch;
+            });
+
+            renderTable(filtered);
+        }
+
+        function checkExpireStatus(dateStr, today) {
+            if (!dateStr || dateStr === 'N/D') return '<span class="text-zinc-500 font-mono">N/D</span>';
+            const expDate = new Date(dateStr);
+            const diffTime = expDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            let colorClass = "text-green-400 bg-green-500/10 border-green-500/30";
+            let statusText = `${dateStr} (${diffDays}g)`;
+
+            if (diffDays < 0) {
+                colorClass = "text-red-400 bg-red-500/10 border-red-500/30 font-bold";
+                statusText = `SCADUTO (${dateStr})`;
+            } else if (diffDays <= 30) {
+                colorClass = "text-amber-400 bg-amber-500/10 border-amber-500/30 font-bold";
+                statusText = `${dateStr} (Scade tra ${diffDays}g)`;
+            }
+
+            return `<span class="px-2 py-0.5 text-[10px] font-mono border ${colorClass}">${statusText}</span>`;
+        }
+
+        window.deleteClient = async (id) => {
+            if (confirm("Sei sicuro di voler eliminare questo cliente dal database?")) {
+                try {
+                    await deleteDoc(doc(db, "clienti", id));
+                    showToast("Cliente eliminato con successo!");
+                    loadClients();
+                } catch (err) {
+                    console.error(err);
+                    alert("Errore durante l'eliminazione.");
+                }
+            }
+        }
+    </script>
+</body>
+</html>
