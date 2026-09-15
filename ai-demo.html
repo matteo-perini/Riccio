@@ -41,22 +41,39 @@
     <!-- Container della Chat -->
     <main class="max-w-2xl mx-auto w-full flex-1 flex flex-col glass-box rounded-2xl shadow-2xl overflow-hidden mb-4 border electric-border">
         
-        <!-- Finestra dei messaggi -->
-        <div id="chat-messages" class="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4 max-h-[60vh] flex flex-col">
+        <!-- Finestra dei messaggi con Avviso "In arrivo" e Test Immagine -->
+        <div id="chat-messages" class="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4 max-h-[65vh] flex flex-col">
+            
+            <!-- Messaggio AI standard -->
             <div class="flex items-start gap-3">
                 <div class="w-8 h-8 rounded-full bg-electric text-white flex items-center justify-center font-bold text-xs flex-shrink-0">AI</div>
                 <div class="bg-neutral-900 border electric-border/40 p-3.5 rounded-xl text-sm text-gray-200 max-w-[80%] leading-relaxed">
                     Ciao! Sono l'assistente virtuale intelligente di <strong>Riccio Web Design</strong>. Conosco a fondo i progetti, i servizi e posso aiutarti anche con ricerche e domande generali. Come posso esserti utile?
                 </div>
             </div>
+
+            <!-- Avviso In Arrivo + Test Immagine -->
+            <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-electric text-white flex items-center justify-center font-bold text-xs flex-shrink-0">⚡</div>
+                <div class="bg-neutral-900 border electric-border/40 p-4 rounded-xl text-sm text-gray-200 max-w-[85%] leading-relaxed space-y-3">
+                    <p class="font-bold text-electric">Stato Sezione: In Arrivo 🚀</p>
+                    <p class="text-xs text-gray-300">Stiamo ultimando i dettagli. Per adesso tutto il codice e la logica sono salvati e pronti per il futuro. Ecco un test visivo per verificare che le immagini del sito carichino correttamente:</p>
+                    
+                    <!-- Immagine di prova integrata -->
+                    <div class="rounded-lg overflow-hidden border electric-border/50 bg-neutral-950 h-36 sm:h-44">
+                        <img src="foto/foto1.png" alt="Test Immagine" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" onerror="this.src='https://via.placeholder.com/800x600/121212/0095ff?text=Immagine+non+trovata'">
+                    </div>
+                </div>
+            </div>
+
         </div>
 
-        <!-- Box di input -->
+        <!-- Box di input (mantenuto per sicurezza nel codice) -->
         <div class="p-3 sm:p-4 bg-black/60 border-t border-neutral-800">
             <form id="chat-form" class="flex gap-2">
-                <input type="text" id="user-input" placeholder="Chiedi qualcosa sul sito o fai una domanda generale..." required
-                    class="flex-1 bg-neutral-900 border electric-border/40 px-4 py-3 rounded-xl text-sm text-white focus:outline-none focus:border-electric">
-                <button type="submit" id="send-btn" class="bg-electric text-white px-5 py-3 rounded-xl font-semibold text-xs uppercase tracking-wider transition shadow-lg">
+                <input type="text" id="user-input" placeholder="Assistente temporaneamente in pausa..." disabled
+                    class="flex-1 bg-neutral-900 border electric-border/40 px-4 py-3 rounded-xl text-sm text-gray-500 focus:outline-none cursor-not-allowed">
+                <button type="submit" id="send-btn" disabled class="bg-neutral-800 text-gray-500 px-5 py-3 rounded-xl font-semibold text-xs uppercase tracking-wider cursor-not-allowed">
                     Invia
                 </button>
             </form>
@@ -68,7 +85,7 @@
         &copy; 2026 Riccio Web Design. Tutti i diritti riservati.
     </footer>
 
-    <!-- Caricamento della configurazione e Logica JavaScript -->
+    <!-- Caricamento della configurazione e Logica JavaScript completa (salvata per il futuro) -->
     <script src="config.js"></script>
     <script>
         const chatForm = document.getElementById('chat-form');
